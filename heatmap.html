@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <!-- Load D3 library version 4 -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <title>Interactive HeatMap with Aggregated Counts</title>
+    <style>
+      body { font-family: sans-serif; }
+      #controls { margin-bottom: 20px; }
+      select { margin: 0 10px; }
+      .axis text { font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h2>Interactive HeatMap with Aggregated Counts</h2>
+    
+    <!-- Dropdowns for selecting axis dimensions -->
+    <div id="controls">
+      X-Axis:
+      <select id="x-axis-select">
+        <option value="cage2">Age</option>
+        <option value="q11">Income</option>
+        <option value="health">Health Conditions</option>
+      </select>
+      Y-Axis:
+      <select id="y-axis-select">
+        <option value="cage2">Age</option>
+        <option value="q11">Income</option>
+        <option value="health">Health Conditions</option>
+      </select>
+    </div>
+    
+    <!-- Div where the heatmap is drawn -->
+    <div id="my_dataviz"></div>
+    
+    <script>
+      // Set dimensions and margins.
+      var margin = {top: 30, right: 30, bottom: 80, left: 80},
+          width = 450 - margin.left - margin.right,
+          height = 450 - margin.top - margin.bottom;
+  
+      // Append SVG.
+      var svg = d3.select("#my_dataviz")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+      // Global variable for loaded data.
+      var dataGlobal;
+  
+      // Health condition fields and their labels.
+      var healthFields = ["q3_01", "q3_02", "q3_03", "q3_04", "q3_05", "q3_06", "q3_07", "q3_08", "q3_09", "q3_10", "q3_11", "q3_12"];
+      var healthLabels = {
+        "q3_01": "Hearing problems",
+        "q3_02": "Vision problems",
+        "q3_03": "Mobility limitations",
+        "q3_04": "Dexterity issues",
+        "q3_05": "Breathing difficulties",
+        "q3_06": "Mental ability issues",
+        "q3_07": "Social behavior conditions",
+        "q3_08": "Mental health conditions",
+        "q3_09": "Other illnesses",
+        "q3_10": "No impairments",
+        "q3_11": "Prefer not to say",
+        "q3_12": "Don't know"
+      };
+      
+      // Age order (as stored in your CSV).
+      var ageOrder = ["16-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+      
+      // Income mapping and order.
+      var incomeMapping = {
+        "Up to �199 per week / Up to �10,399 per year": "£0-£10,399",
+        "�200 to �299 per week / �10,400 to �15,599 per year": "£10,400-£15,599",
+        "�300 to �499 per week / �15,600 to �25,999 per year": "£15,600-£25,999",
+        "�500 to v699 per week / �26,000 to �36,399 per year": "£26,000-£36,399",
+        "�700 to �999 per week / �36,400 to �51,999 per year": "£36,400-£51,999",
+        "�1,000 and above per week / �52,000 and above per year": "£52,000+",
+        "Don't know": "Don't know",
+        "Prefer not to say": "Prefer not to say"
+      };
+      
+      var incomeOrder = [
+        "£0-£10,399",
+        "£10,400-£15,599",
+        "£15,600-£25,999",
+        "£26,000-£36,399",
+        "£36,400-£51,999",
+        "£52,000+",
+        "Don't know",
+        "Prefer not to say"
+      ];
+  
+      // Utility function to get category values.
+      // For health: only return the mapped label if the value is "Yes" (case-insensitive).
+      // For income: return the mapped income label.
+      // Otherwise: return the raw value.
+      function getCategories(d, axis) {
+        if (axis === "health") {
+          var cats = [];
+          healthFields.forEach(function(field) {
+            if (d[field] && d[field].toLowerCase() === "yes") {
+              cats.push(healthLabels[field] || field);
+            }
+          });
+          return cats;
+        } else if (axis === "q11") {
+          return [ incomeMapping[d[axis]] || d[axis] ];
+        } else {
+          return [ d[axis] ];
+        }
+      }
+  
+      // Update heatmap: aggregate data and build full cross-product.
+      function updateHeatmap() {
+        var xAttr = document.getElementById("x-axis-select").value;
+        var yAttr = document.getElementById("y-axis-select").value;
+  
+        // Aggregate data.
+        var aggregated = {};
+        dataGlobal.forEach(function(d) {
+          var xCats = getCategories(d, xAttr);
+          var yCats = getCategories(d, yAttr);
+          xCats.forEach(function(xCat) {
+            yCats.forEach(function(yCat) {
+              var key = xCat + "_" + yCat;
+              if (!aggregated[key]) {
+                aggregated[key] = { xCat: xCat, yCat: yCat, count: 0 };
+              }
+              aggregated[key].count += 1;
+            });
+          });
+        });
+  
+        // Determine domain for each axis.
+        var xDomain;
+        if(xAttr === "cage2") {
+          xDomain = ageOrder;
+        } else if(xAttr === "q11") {
+          xDomain = incomeOrder;
+        } else if(xAttr === "health") {
+          // Force domain in the order of healthFields using mapped labels.
+          xDomain = healthFields.map(function(f) { return healthLabels[f] || f; });
+        } else {
+          xDomain = Array.from(new Set(dataGlobal.map(function(d) { return getCategories(d, xAttr)[0]; })));
+        }
+  
+        var yDomain;
+        if(yAttr === "cage2") {
+          yDomain = ageOrder;
+        } else if(yAttr === "q11") {
+          yDomain = incomeOrder;
+        } else if(yAttr === "health") {
+          yDomain = healthFields.map(function(f) { return healthLabels[f] || f; });
+        } else {
+          yDomain = Array.from(new Set(dataGlobal.map(function(d) { return getCategories(d, yAttr)[0]; })));
+        }
+  
+        // Build full cross-product so every combination is represented.
+        var fullData = [];
+        xDomain.forEach(function(xVal) {
+          yDomain.forEach(function(yVal) {
+            var key = xVal + "_" + yVal;
+            if (aggregated[key]) {
+              fullData.push(aggregated[key]);
+            } else {
+              fullData.push({ xCat: xVal, yCat: yVal, count: 0 });
+            }
+          });
+        });
+  
+        // Clear previous SVG content.
+        svg.selectAll("*").remove();
+  
+        // Create scales.
+        var xScale = d3.scaleBand()
+          .range([0, width])
+          .domain(xDomain)
+          .padding(0.01);
+  
+        var yScale = d3.scaleBand()
+          .range([height, 0])
+          .domain(yDomain)
+          .padding(0.01);
+  
+        // Append axes.
+        svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(xScale).tickSize(0))
+          .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-45)");
+  
+        svg.append("g")
+          .call(d3.axisLeft(yScale).tickSize(0));
+  
+        // Create color scale.
+        var maxCount = d3.max(fullData, function(d) { return d.count; });
+        var myColor = d3.scaleLinear()
+          .range(["white", "#69b3a2"])
+          .domain([0, maxCount]);
+  
+        // Draw heatmap rectangles.
+        svg.selectAll()
+          .data(fullData, function(d) { return d.xCat + ":" + d.yCat; })
+          .enter()
+          .append("rect")
+            .attr("x", function(d) { return xScale(d.xCat); })
+            .attr("y", function(d) { return yScale(d.yCat); })
+            .attr("width", xScale.bandwidth())
+            .attr("height", yScale.bandwidth())
+            .style("fill", function(d) { return myColor(d.count); })
+          .append("title")
+            .text(function(d) { return d.count; });
+      }
+  
+      // Load CSV data.
+      let datapath = "data/digital-exclusion-data.csv";
+      d3.csv(datapath, function(data) {
+        dataGlobal = data;
+        updateHeatmap();
+      });
+  
+      // Update heatmap on axis selection change.
+      document.getElementById("x-axis-select").addEventListener("change", updateHeatmap);
+      document.getElementById("y-axis-select").addEventListener("change", updateHeatmap);
+    </script>
+  </body>
+</html>
