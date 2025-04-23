@@ -3,90 +3,36 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Reusable Bar Chart</title>
+  <title>Digital Exclusion </title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    #main {
-      display: flex;
-      align-items: flex-start;
-      flex-direction: column;
-      justify-content: center;
-      padding: 20px;
-    }
+  <link rel="stylesheet" href="style.css">
 
-    #all-categories {
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-      padding: 20px;
-      border: 1px solid #ccc;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    }
-
-    #barcharts {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      gap: 20px;
-      background: #fff;
-      padding: 20px;
-      border: 1px solid #ccc;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-      width: 1000px;
-      height: 250px;
-    }
-
-    .chart {
-      flex: 1;
-      height: 100%;
-      position: relative;
-    }
-
-    #map-container {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
-      justify-content: center;
-      margin: 20px;
-    }
-
-    .region {
-      padding: 10px 20px;
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
-
-    .region:hover {
-      background-color: #d0d0d0;
-    }
-
-    #barcharts {
-      display: none;
-    }
-
-    #barcharts.visible {
-      display: flex;
-      flex-direction: row;
-    }
-
-    #all-categories {
-      display: none;
-    }
-
-    #all-categories.visible {
-      display: flex;
-      flex-direction: column;
-    }
-  </style>
 </head>
 
 <body>
   <div id="main">
+
+    <!-- GEOGRAPHICAL MAP -->
     <div id="map-container">
       <!--      <button class="region" data-region="scotland">Scotland</button> -->
       <!--      <button class="region" data-region="england">England</button> -->
+
       <div id="controls">
+        <!--  -->
+        <fieldset id="modeSwitch">
+          <legend>Filter by:</legend>
+          <label>
+            <input type="radio" name="mode" value="type" checked>
+            Device Type
+          </label>
+          <label>
+            <input type="radio" name="mode" value="usage">
+            Device Usage
+          </label>
+        </fieldset>
+        <!--  -->
+
+        <!--  -->
         <label>
           Device:
           <select id="deviceFilter"></select>
@@ -96,13 +42,13 @@
           <select id="ageFilter">
           </select>
         </label>
+        <!--  -->
       </div>
       <svg id="map" width="960" height="800"></svg>
-      <!-- <script src="./DataProcessor.js"></script> -->
-      <!-- <script src="./HeatMap.js"></script> -->
       <script src="./regionalMap.js"></script>
     </div>
 
+    <!-- BAR CHART -->
     <div id="all-categories">
       <h3 id="region-title"></h3>
       <div id="barcharts">
@@ -111,18 +57,22 @@
         <div id="health" class="chart"></div>
       </div>
     </div>
+
+    <!-- HEAT MAP  -->
+    <!-- Heatmap container must be before the script that uses it -->
+    <div id="heatmap"></div>
+
+    <!-- Load and run everything in one module block -->
+    <script type="module">
+      import { drawHeatmap } from './heatmap.js';
+      import './main.js'; // optional, if you want to use additional logic
+
+      drawHeatmap('#heatmap', 'data/digital-exclusion-data.csv');
+    </script>
+
   </div>
 
-  <!-- Heatmap container must be before the script that uses it -->
-  <div id="heatmap"></div>
-
-  <!-- Load and run everything in one module block -->
-  <script type="module">
-    import { drawHeatmap } from './heatmap.js';
-    import './main.js'; // optional, if you want to use additional logic
-
-    drawHeatmap('#heatmap', 'data/digital-exclusion-data.csv');
-  </script>
+  
 </body>
 
 </html>
