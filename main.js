@@ -33,12 +33,12 @@ loadAndProcessData('digital-exclusion-data.csv').then(regionData => {
 });
 
 
-highLevelDataProcessor('./Map/digital_poverty.csv')
-  .then(summary => {
-    console.log(JSON.stringify(summary, null, 2));
+// highLevelDataProcessor('./Map/digital_poverty.csv')
+//   .then(summary => {
+//     console.log(JSON.stringify(summary, null, 2));
     
-    document.body.appendChild(
-      document.createElement('pre')
-    ).textContent = JSON.stringify(summary, null, 2);
-  })
-  .catch(err => console.error(err));
+//     document.body.appendChild(
+//       document.createElement('pre')
+//     ).textContent = JSON.stringify(summary, null, 2);
+//   })
+//   .catch(err => console.error(err));
