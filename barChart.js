@@ -78,28 +78,29 @@ export function displayCharts(region, data) {
 
   createBarChart({
     containerId: "age",
-    data: data.age,
+    data: Object.entries(data.age).map(([key, value]) => ({ category: key, value })),
     yKey: "category",
     xKey: "value",
     yLabel: "Age group",
     xLabel: "# of devices owned"
   });
-
+  
   createBarChart({
     containerId: "income",
-    data: data.income,
+    data: Object.entries(data.income).map(([key, value]) => ({ category: key, value })),
     yKey: "category",
     xKey: "value",
     yLabel: "Income band",
     xLabel: "# of devices owned"
   });
-
+  
   createBarChart({
     containerId: "health",
-    data: data.health,
+    data: Object.entries(data.health).map(([key, value]) => ({ category: key, value })),
     yKey: "category",
     xKey: "value",
     yLabel: "Health issues",
     xLabel: "# of devices owned"
   });
+  
 }

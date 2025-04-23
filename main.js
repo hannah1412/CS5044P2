@@ -1,15 +1,22 @@
 import { displayCharts } from './barChart.js';
-import { loadAndProcessData } from './dataProcessor.js';
-import { highLevelDataProcessor} from './HighLevelDataProcessor.js'
+import { highLevelDataProcessor } from './HighLevelDataProcessor.js'
 
-loadAndProcessData('digital-exclusion-data.csv').then(regionData => {
+highLevelDataProcessor('./data/digital-exclusion-data.csv').then(regionData => {
+  console.log(regionData["Scotland"])
   document.querySelectorAll(".region").forEach(button => {
     button.addEventListener("click", e => {
-      const region = e.target.dataset.region;
-      const data = regionData[region];
+      const regionFeature = e.target.__data__;
+      const regionName = regionFeature?.properties?.EER13NM;
+      console.log(regionName)
+      if (!regionName) {
+        console.warn("No region name found on clicked element");
+        return;
+      }
+
+      const data = regionData[regionName];
 
       if (!data) return;
-      displayCharts(region, data);
+      displayCharts(regionName, data);
     });
   });
 
@@ -31,14 +38,3 @@ loadAndProcessData('digital-exclusion-data.csv').then(regionData => {
     }
   });
 });
-
-
-// highLevelDataProcessor('./Map/digital_poverty.csv')
-//   .then(summary => {
-//     console.log(JSON.stringify(summary, null, 2));
-    
-//     document.body.appendChild(
-//       document.createElement('pre')
-//     ).textContent = JSON.stringify(summary, null, 2);
-//   })
-//   .catch(err => console.error(err));
