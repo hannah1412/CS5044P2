@@ -42,7 +42,7 @@
       position: relative;
     }
 
-    #map {
+    #map-container {
       display: flex;
       flex-direction: row;
       gap: 20px;
@@ -83,9 +83,24 @@
 
 <body>
   <div id="main">
-    <div id="map">
-      <button class="region" data-region="scotland">Scotland</button>
-      <button class="region" data-region="england">England</button>
+    <div id="map-container">
+      <!--      <button class="region" data-region="scotland">Scotland</button> -->
+      <!--      <button class="region" data-region="england">England</button> -->
+      <div id="controls">
+        <label>
+          Device:
+          <select id="deviceFilter"></select>
+        </label>
+        <label>
+          Age:
+          <select id="ageFilter">
+          </select>
+        </label>
+      </div>
+      <svg id="map" width="960" height="800"></svg>
+      <!-- <script src="./DataProcessor.js"></script> -->
+      <!-- <script src="./HeatMap.js"></script> -->
+      <script src="./regionalMap.js"></script>
     </div>
 
     <div id="all-categories">
