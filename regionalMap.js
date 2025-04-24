@@ -47,28 +47,35 @@ function normalize(s) {
 }
 
 /**
- * Generalised function to 
- * @param {*} rows 
- * @param {*} columns 
- * @param {*} labels 
- * @returns 
+ * Generalised function to aggregate counts by region, category (device/usage), and age group.
+ * @param {Array<Object>} rows    - array of resposnes
+ * @param {Array<string>} columns  - array of column keys
+ * @param {Object} labels          - mapping keys -> normal labels
+ * @returns {Array<Object>}        - Flattened array of { region, category, age, count }.
  */
 function processingData(rows, columns, labels) {
   const countsByRegion = {};
+
   rows.forEach(row => {
+    // normalise -> consistent keys
     const region = normalize(row.brk_government_region);
     const age    = normalize(row.cage2);
+
     if (!countsByRegion[region]) countsByRegion[region] = {};
+
     columns.forEach(col => {
-      const category = labels[col];
-      if (!countsByRegion[region][category]) 
-        countsByRegion[region][category] = {};
+      const category = labels[col];   // csv label look up
+      if (!countsByRegion[region][category]) {
+        countsByRegion[region][category] = {}     
+      };
       const yes = row[col].trim().toLowerCase() === 'yes';
       countsByRegion[region][category][age] = 
-        (countsByRegion[region][category][age] || 0) + (yes ? 1 : 0);
+                            (countsByRegion[region][category][age] || 0) + (yes ? 1 : 0);   //increment 
     });
+
   });
 
+  // returns a FlatMap
   return Object.entries(countsByRegion).flatMap(([region, cats]) =>
     Object.entries(cats).flatMap(([category, ages]) =>
       Object.entries(ages).map(([age, count]) => 
@@ -77,47 +84,30 @@ function processingData(rows, columns, labels) {
   );
 }
 
-
+/**
+ * Look up and aggregate counts 
+ * @param {Array<Object>} records      - array of objs { region, category, age, count }.
+ * @param {string} categoryName        - category name in pdf
+ * @param {string} ageGroup            - age group label
+ * @returns {Object<string, number>}   - mapping objs
+ */
 function countsLookUp(records, categoryName, ageGroup) {
   const ageNorm = normalize(ageGroup);
-  return records
-    .filter(r => r.category === categoryName && normalize(r.age) === ageNorm)
-    .reduce((acc, r) => {
-      acc[r.region] = r.count;
-      return acc;
-    }, {});
+  return records.filter(r => r.category === categoryName && normalize(r.age) === ageNorm)
+                .reduce((acc, r) => {
+                  acc[r.region] = r.count;
+                  return acc;
+                }, {});
 }
 
-function buildLegend(svg, min, max, color, width, height) {
-  const lw=300, lh=10;
-  const legendG =svg.select("g.legend")
-                    .attr("transform", `translate(20,${height-40})` );
-  
-          // clear out the old contents
-          legendG.selectAll("*").remove();
-  
-  // create gradient
-  const defs = svg.select("defs");
-  const grad = defs.selectAll("#legend-gradient").data([0])
-    .join("linearGradient")
-      .attr("id","legend-gradient")
-      .attr("x1","0%").attr("y1","0%")
-      .attr("x2","100%").attr("y2","0%");
-  grad.selectAll("stop").remove();
-  grad.append("stop").attr("offset","0%").attr("stop-color",color(min));
-  grad.append("stop").attr("offset","100%").attr("stop-color",color(max));
-
-  // draw legend bar + axis
-  legendG.append("rect")
-    .attr("width",lw).attr("height",lh)
-    .attr("fill","url(#legend-gradient)");
-  
-  const scale = d3.scaleLinear().domain([min,max]).range([0,lw]);
-  legendG.append("g")
-    .attr("transform",`translate(0,${lh})`)
-    .call(d3.axisBottom(scale).ticks(5));
-}
-
+/**
+ * Updates the fill colors of the choropleth map based on provided counts.
+ *
+ * @param {Object} svg              - container
+ * @param {Array<Object>} features   - GeoJSON features for each region
+ * @param {Object<string, number>} counts - mapping normalized region names to their count values.
+ * @returns Returns the computed min/max values and the D3 color scale used.
+ */
 function updateChoropleth(svg, features, counts) {
   // normalize feature names:
   const cnt = {};
@@ -125,7 +115,9 @@ function updateChoropleth(svg, features, counts) {
   // get values array
   const vals = features.map(f => cnt[normalize(f.properties.EER13NM)] || 0);
   let [min, max] = d3.extent(vals);
-  if (min === max) { min = 0; } 
+  if (min === max) { 
+    min = 0; 
+  } 
   const color = d3.scaleSequential(d3.interpolateBlues).domain([min, max]);
   // only update the region‑paths
   svg.selectAll("path.region")
@@ -149,7 +141,6 @@ function populateCategoryFilter() {
        .attr("value", d => d)
        .text(d => labels[d]);
 }
-
 
 // --- load everything & draw ---
 Promise.all([
@@ -188,7 +179,6 @@ Promise.all([
   const proj    = d3.geoMercator().fitSize([width,height],geojson);
   const pathGen = d3.geoPath(proj);
 
-
   // tooltip (unchanged)
   const tooltip = d3.select("body").append("div")
     .attr("class","tooltip")
@@ -215,7 +205,7 @@ Promise.all([
     // 3) get counts and redraw
     currentCounts = countsLookUp(records, categoryName, ageGrp);
     const {min, max, color} = updateChoropleth(svg, features, currentCounts);
-    buildLegend(svg, min, max, color, width, height);
+    // buildLegend(svg, min, max, color, width, height);
 
   }
   svg.select("g.legend").raise();
@@ -246,8 +236,6 @@ Promise.all([
     .on("mouseout",()=>{
       tooltip.style("visibility","hidden");
     });
-
-
     // RADIO to switch filter 
     const modeRadios = document.querySelectorAll('input[name="mode"]');
 
@@ -261,7 +249,6 @@ Promise.all([
     );
     const catSelect = d3.select("#deviceFilter");
     catSelect.on("change", refresh);
-
 
   // populate dropdowns
   const devSelect = d3.select("#deviceFilter");
@@ -278,7 +265,6 @@ Promise.all([
   // wire up listeners
   devSelect.on("change", refresh);
   ageSelect.on("change", refresh);
-
   populateCategoryFilter();
 
   // defaults + initial draw
