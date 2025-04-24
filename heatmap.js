@@ -17,8 +17,8 @@ export function drawHeatmap(
   defaultX      = 'health',
   defaultY      = 'age'
 ) {
-  const margin = {top:30, right:30, bottom:120, left:120};
-  const width  = 600 - margin.left - margin.right;
+  const margin = {top:30, right:30, bottom:120, left:220};
+  const width  = 700 - margin.left - margin.right;
   const height = 600 - margin.top  - margin.bottom;
 
   // 1) Clear & build static UI (controls + SVG + tooltip)
@@ -137,12 +137,17 @@ export function drawHeatmap(
       .selectAll('text')
       .style('text-anchor','end')
       .attr('dx','-.8em').attr('dy','.15em')
-      .attr('transform','rotate(-45)');
+      .attr('transform','rotate(-45)')
+      .style('font-size', '12px');
 
-    svg.append('g').call(d3.axisLeft(yScale).tickSize(0));
+    svg.append('g')
+      .call(d3.axisLeft(yScale).tickSize(0))
+      .selectAll('text')
+      .style('font-size', '12px');
 
     const maxCnt = d3.max(fullData,d=>d.count);
-    const color  = d3.scaleLinear().domain([0,maxCnt]).range(['#CAF0F8','#03045E']);
+    // const color  = d3.scaleLinear().domain([0,maxCnt]).range(['#CAF0F8','#03045E']);
+    const color = d3.scaleSequential(d3.interpolateBlues).domain([0, maxCnt]);
 
     svg.selectAll('rect')
       .data(fullData)
