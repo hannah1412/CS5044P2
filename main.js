@@ -2,21 +2,23 @@ import { displayCharts } from './barChart.js';
 import { highLevelDataProcessor } from './HighLevelDataProcessor.js'
 
 highLevelDataProcessor('./data/digital-exclusion-data.csv').then(regionData => {
-  console.log(regionData["Scotland"])
   document.querySelectorAll(".region").forEach(button => {
     button.addEventListener("click", e => {
+      const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+      var ylabel = "";
+      if (selectedMode == "usage") {
+        ylabel = "Number of Device Usage Reasons"
+      } else {
+        ylabel = "Number of Devices Owned"
+      }
+
       const regionFeature = e.target.__data__;
       const regionName = regionFeature?.properties?.EER13NM;
-      console.log(regionName)
-      if (!regionName) {
-        console.warn("No region name found on clicked element");
-        return;
-      }
 
       const data = regionData[regionName];
 
       if (!data) return;
-      displayCharts(regionName, data);
+      displayCharts(regionName, data, ylabel);
     });
   });
 

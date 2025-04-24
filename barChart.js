@@ -47,7 +47,8 @@ export function createBarChart({ containerId, data, xKey, yKey, xLabel, yLabel }
     .attr("y", d => y(d[yKey]))
     .attr("x", 0)
     .attr("height", y.bandwidth())
-    .attr("width", d => x(d[xKey]));
+    .attr("width", d => x(d[xKey]))
+    .style("fill", "steelblue");
 
   svg.append("text")
     .attr("x", width / 2)
@@ -63,7 +64,7 @@ export function createBarChart({ containerId, data, xKey, yKey, xLabel, yLabel }
     .text(yLabel);
 }
 
-export function displayCharts(region, data) {
+export function displayCharts(region, data, device_filter) {
   const regionTitle = document.getElementById("region-title");
   regionTitle.textContent = `Data for ${region}`;
   regionTitle.style.display = "block";
@@ -107,7 +108,7 @@ export function displayCharts(region, data) {
     yKey: "category",
     xKey: "value",
     yLabel: "Age group",
-    xLabel: "# of devices owned"
+    xLabel: device_filter
   });
 
   createBarChart({
@@ -116,7 +117,7 @@ export function displayCharts(region, data) {
     yKey: "category",
     xKey: "value",
     yLabel: "Income band",
-    xLabel: "# of devices owned"
+    xLabel: device_filter
   });
 
   createBarChart({
@@ -125,7 +126,7 @@ export function displayCharts(region, data) {
     yKey: "category",
     xKey: "value",
     yLabel: "Health issues",
-    xLabel: "# of devices owned"
+    xLabel: device_filter
   });
 
 }
