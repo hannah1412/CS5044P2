@@ -113,13 +113,11 @@
     </div>
   </div>
 
-  <!-- Heatmap container must be before the script that uses it -->
   <div id="heatmap"></div>
 
-  <!-- Load and run everything in one module block -->
   <script type="module">
     import { drawHeatmap } from './heatmap.js';
-    import './main.js'; // optional, if you want to use additional logic
+    import './main.js';
 
     drawHeatmap('#heatmap', 'data/digital-exclusion-data.csv');
   </script>
