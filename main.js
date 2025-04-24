@@ -3,12 +3,11 @@ import { displayCharts } from './barChart.js';
 barChartDataProcessor('./data/digital-exclusion-data.csv').then(regionData => {
   document.querySelectorAll(".region").forEach(button => {
     button.addEventListener("click", e => {
-      const selectedMode = document.querySelector('input[name="mode"]:checked').value;
-      var ylabel = "";
-      if (selectedMode == "usage") {
-        ylabel = "Number of Device Usage Reasons"
+      var selectedMode = document.querySelector('input[name="mode"]:checked').value;
+      if (selectedMode == "type") {
+        selectedMode = "device";
       } else {
-        ylabel = "Number of Devices Owned"
+        selectedMode = "usage";
       }
 
       const regionFeature = e.target.__data__;
@@ -18,7 +17,7 @@ barChartDataProcessor('./data/digital-exclusion-data.csv').then(regionData => {
       console.log(data);
 
       if (!data) return;
-      displayCharts(regionName, data, ylabel);
+      displayCharts(regionName, data, selectedMode);
     });
   });
 
@@ -124,14 +123,14 @@ function barChartDataProcessor(csvPath) {
       const age = row[ageCol];
       const ageLabel = age;
       if (!summary[region].age[ageLabel]) {
-        summary[region].age[ageLabel] = { total: 0, devices: {}, usage: {} };
+        summary[region].age[ageLabel] = { total: 0, device: {}, usage: {} };
       }
       summary[region].age[ageLabel].total++;
       
       deviceCols.forEach(col => {
         if (row[col] === 'Yes') {
           const label = deviceLabels[col];
-          summary[region].age[ageLabel].devices[label] = (summary[region].age[ageLabel].devices[label] || 0) + 1;
+          summary[region].age[ageLabel].device[label] = (summary[region].age[ageLabel].device[label] || 0) + 1;
         }
       });
 
@@ -146,14 +145,14 @@ function barChartDataProcessor(csvPath) {
       const rawIncome = row[incomeCol];
       const incomeLabel = incomeLabels[rawIncome];
       if (!summary[region].income[incomeLabel]) {
-        summary[region].income[incomeLabel] = { total: 0, devices: {}, usage: {} };
+        summary[region].income[incomeLabel] = { total: 0, device: {}, usage: {} };
       }
       summary[region].income[incomeLabel].total++;
 
       deviceCols.forEach(col => {
         if (row[col] === 'Yes') {
           const label = deviceLabels[col];
-          summary[region].income[incomeLabel].devices[label] = (summary[region].income[incomeLabel].devices[label] || 0) + 1;
+          summary[region].income[incomeLabel].device[label] = (summary[region].income[incomeLabel].device[label] || 0) + 1;
         }
       });
 
@@ -169,14 +168,14 @@ function barChartDataProcessor(csvPath) {
         if (row[healthCol] === 'Yes') {
           const healthLabel = healthLabels[healthCol];
           if (!summary[region].health[healthLabel]) {
-            summary[region].health[healthLabel] = { total: 0, devices: {}, usage: {} };
+            summary[region].health[healthLabel] = { total: 0, device: {}, usage: {} };
           }
           summary[region].health[healthLabel].total++;
 
           deviceCols.forEach(col => {
             if (row[col] === 'Yes') {
               const label = deviceLabels[col];
-              summary[region].health[healthLabel].devices[label] = (summary[region].health[healthLabel].devices[label] || 0) + 1;
+              summary[region].health[healthLabel].device[label] = (summary[region].health[healthLabel].device[label] || 0) + 1;
             }
           });
 
