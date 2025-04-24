@@ -1,4 +1,4 @@
-export function createBarChart({ containerId, data, xKey, yKey, xLabel, yLabel, radioMode }) {
+export function createBarChart({ containerId, data, xKey, yKey, xLabel, yLabel, radioMode, yDomain }) {
   d3.select(`#${containerId}`).html("");
 
   const container = document.getElementById(containerId);
@@ -18,7 +18,7 @@ export function createBarChart({ containerId, data, xKey, yKey, xLabel, yLabel, 
 
   const y = d3.scaleBand()
     .range([0, height])
-    .domain(data.map(d => d[yKey]))
+    .domain(yDomain || data.map(d => d[yKey]))
     .padding(0.2);
 
   svg.append("g")
@@ -62,16 +62,17 @@ export function createBarChart({ containerId, data, xKey, yKey, xLabel, yLabel, 
     .style("fill", "steelblue")
     .on("mouseover", function (event, d) {
       const breakdown = d[xKey][radioMode];
+    
       const breakdownText = Object.entries(breakdown)
         .sort((a, b) => b[1] - a[1])
         .map(([k, v]) => `${k}: ${v}`)
         .join("<br>");
-
+    
       tooltip.transition().duration(200).style("opacity", 1);
       tooltip.html(`<strong>${d[yKey]}</strong><br><br>${breakdownText}`)
         .style("left", (event.pageX + 10) + "px")
         .style("top", (event.pageY - 28) + "px");
-    })
+    })    
     .on("mouseout", function () {
       tooltip.transition().duration(500).style("opacity", 0);
     });
@@ -118,9 +119,10 @@ export function displayCharts(region, data, device_filter) {
     xKey: "value",
     yLabel: "Age group",
     xLabel: "Count",
-    radioMode: device_filter
+    radioMode: device_filter,
+    yDomain: ageOrder
   });
-
+  
   createBarChart({
     containerId: "income",
     data: Object.entries(data.income).map(([key, value]) => ({ category: key, value })),
@@ -128,9 +130,10 @@ export function displayCharts(region, data, device_filter) {
     xKey: "value",
     yLabel: "Income band",
     xLabel: "Count",
-    radioMode: device_filter
+    radioMode: device_filter,
+    yDomain: incomeOrder
   });
-
+  
   createBarChart({
     containerId: "health",
     data: Object.entries(data.health).map(([key, value]) => ({ category: key, value })),
@@ -139,6 +142,6 @@ export function displayCharts(region, data, device_filter) {
     yLabel: "Health issues",
     xLabel: "Count",
     radioMode: device_filter
-  });
+  });  
 
 }
