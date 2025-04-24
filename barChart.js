@@ -77,25 +77,7 @@ export function displayCharts(region, data, device_filter) {
   chartsContainer.style.display = "flex";
   chartsContainer.style.flexDirection = "column";
 
-  // Want to remap key to labels.
-  const healthLabels = {
-    q3_01: 'Hearing problems', q3_02: 'Vision problems',
-    q3_03: 'Mobility limitations', q3_04: 'Dexterity issues',
-    q3_05: 'Breathing difficulties', q3_06: 'Mental ability issues',
-    q3_07: 'Social behavior conditions', q3_08: 'Mental health conditions',
-    q3_09: 'Other illnesses', q3_10: 'No impairments',
-    q3_11: 'Prefer not to say', q3_12: "Don't know"
-  };
   const ageOrder = ['16-24', '25-34', '35-44', '45-54', '55-64', '65+'];
-  const incomeLabels = {
-    'Up to �199 per week / Up to �10,399 per year': '£0-£10,399',
-    '�200 to �299 per week / �10,400 to �15,599 per year': '£10,400-£15,599',
-    '�300 to �499 per week / �15,600 to �25,999 per year': '£15,600-£25,999',
-    '�500 to v699 per week / �26,000 to �36,399 per year': '£26,000-£36,399',
-    '�700 to �999 per week / �36,400 to �51,999 per year': '£36,400-£51,999',
-    '�1,000 and above per week / �52,000 and above per year': '£52,000+',
-    "Don't know": "Don't know", "Prefer not to say": "Prefer not to say"
-  };
   const incomeOrder = [
     '£0-£10,399', '£10,400-£15,599', '£15,600-£25,999',
     '£26,000-£36,399', '£36,400-£51,999', '£52,000+',
@@ -108,25 +90,25 @@ export function displayCharts(region, data, device_filter) {
     yKey: "category",
     xKey: "value",
     yLabel: "Age group",
-    xLabel: device_filter
+    xLabel: "Count"
   });
 
   createBarChart({
     containerId: "income",
-    data: Object.entries(data.income).map(([key, value]) => ({ category: incomeLabels[key], value })),
+    data: Object.entries(data.income).map(([key, value]) => ({ category: key, value })),
     yKey: "category",
     xKey: "value",
     yLabel: "Income band",
-    xLabel: device_filter
+    xLabel: "Count"
   });
 
   createBarChart({
     containerId: "health",
-    data: Object.entries(data.health).map(([key, value]) => ({ category: healthLabels[key], value })),
+    data: Object.entries(data.health).map(([key, value]) => ({ category: key, value })),
     yKey: "category",
     xKey: "value",
     yLabel: "Health issues",
-    xLabel: device_filter
+    xLabel: "Count"
   });
 
 }

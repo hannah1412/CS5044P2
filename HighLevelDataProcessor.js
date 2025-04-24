@@ -1,5 +1,3 @@
-
-
 const incomeCol = 'q11';
 const ageCol    = 'cage2';
 const regionCol = 'brk_government_region';
@@ -7,6 +5,7 @@ const regionCol = 'brk_government_region';
 // all columns 
 const healthCols = d3.range(1,11).map(i => 'q3_' + String(i).padStart(2,'0'));
 const deviceCols = d3.range(1,11).map(i => 'q1_' + String(i).padStart(2,'0'));
+const usageCols = d3.range(1, 20).map(i => 'q2_' + String(i).padStart(2,'0'));
 
 export function highLevelDataProcessor(csvPath){
 
@@ -20,7 +19,8 @@ export function highLevelDataProcessor(csvPath){
           income: {},
           age:    {},
           health: {},
-          device: {}
+          device: {},
+          usage: {},
         };
       }
 
@@ -43,6 +43,12 @@ export function highLevelDataProcessor(csvPath){
       deviceCols.forEach(col => {
         if (row[col] === 'Yes') {
           summary[region].device[col] = (summary[region].device[col] || 0) + 1;
+        }
+      });
+
+      usageCols.forEach(col => {
+        if (row[col] === 'Yes') {
+          summary[region].usage[col] = (summary[region].usage[col] || 0) + 1;
         }
       });
     });
