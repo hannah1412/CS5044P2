@@ -98,11 +98,16 @@
 
 #heatmap {
     font-weight: bold;
-    select {
-        border: 1.5px solid rgb(63, 133, 225);
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 16px;
-        text-align: center;
-        background-color: white;
-    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#heatmap select {
+    border: 1.5px solid rgb(63, 133, 225);
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 16px;
+    text-align: center;
+    background-color: white;
 }

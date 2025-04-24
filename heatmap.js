@@ -17,9 +17,9 @@ export function drawHeatmap(
   defaultX      = 'health',
   defaultY      = 'age'
 ) {
-  const margin = {top:30, right:30, bottom:80, left:80};
-  const width  = 450 - margin.left - margin.right;
-  const height = 450 - margin.top  - margin.bottom;
+  const margin = {top:30, right:30, bottom:120, left:120};
+  const width  = 600 - margin.left - margin.right;
+  const height = 600 - margin.top  - margin.bottom;
 
   // 1) Clear & build static UI (controls + SVG + tooltip)
   const container = d3.select(containerId);
@@ -28,6 +28,7 @@ export function drawHeatmap(
   const controls = container.append('div')
     .attr('id','controls')
     .style('margin-bottom','20px')
+    .style('margin-top','20px')
     .html(`
       X-Axis:
       <select id="x-axis-select">
@@ -73,12 +74,12 @@ export function drawHeatmap(
   };
   const ageOrder = ['16-24','25-34','35-44','45-54','55-64','65+'];
   const incomeLabels = {
-    'Up to £199 per week / Up to £10,399 per year':'£0-£10,399',
-    '£200 to £299 per week / £10,400 to £15,599 per year':'£10,400-£15,599',
-    '£300 to £499 per week / £15,600 to £25,999 per year':'£15,600-£25,999',
-    '£500 to v699 per week / £26,000 to £36,399 per year':'£26,000-£36,399',
-    '£700 to £999 per week / £36,400 to £51,999 per year':'£36,400-£51,999',
-    '£1,000 and above per week / £52,000 and above per year':'£52,000+',
+    'Up to �199 per week / Up to �10,399 per year':'£0-£10,399',
+    '�200 to �299 per week / �10,400 to �15,599 per year':'£10,400-£15,599',
+    '�300 to �499 per week / �15,600 to �25,999 per year':'£15,600-£25,999',
+    '�500 to v699 per week / �26,000 to �36,399 per year':'£26,000-£36,399',
+    '�700 to �999 per week / �36,400 to �51,999 per year':'£36,400-£51,999',
+    '�1,000 and above per week / �52,000 and above per year':'£52,000+',
     "Don't know":"Don't know", "Prefer not to say":"Prefer not to say"
   };
   const incomeOrder = [
@@ -111,14 +112,17 @@ export function drawHeatmap(
 
     // Build every combo
     const fullData = [];
+    const total = d3.sum(Object.values(srcX)) || 1; // approximate joint basis
+
     xDomain.forEach(xVal => {
       yDomain.forEach(yVal => {
-        const rawX = Object.keys(srcX).find(k=>getLabel(xAttr,k)===xVal);
-        const rawY = Object.keys(srcY).find(k=>getLabel(yAttr,k)===yVal);
-        const vX   = srcX[rawX]||0;
-        const vY   = srcY[rawY]||0;
-        const cnt  = (xAttr===yAttr && rawX===rawY) ? vX : Math.min(vX,vY);
-        fullData.push({ xCat:xVal, yCat:yVal, count:cnt });
+        const rawX = Object.keys(srcX).find(k => getLabel(xAttr, k) === xVal);
+        const rawY = Object.keys(srcY).find(k => getLabel(yAttr, k) === yVal);
+        const vX = srcX[rawX] || 0;
+        const vY = srcY[rawY] || 0;
+
+        const cnt = (xAttr === yAttr && rawX === rawY) ? vX : (vX * vY / total);
+        fullData.push({ xCat: xVal, yCat: yVal, count: Math.round(cnt) });
       });
     });
 
@@ -138,7 +142,7 @@ export function drawHeatmap(
     svg.append('g').call(d3.axisLeft(yScale).tickSize(0));
 
     const maxCnt = d3.max(fullData,d=>d.count);
-    const color  = d3.scaleLinear().domain([0,maxCnt]).range(['#fff','#023E8A']);
+    const color  = d3.scaleLinear().domain([0,maxCnt]).range(['#CAF0F8','#03045E']);
 
     svg.selectAll('rect')
       .data(fullData)
